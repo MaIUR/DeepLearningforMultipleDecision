@@ -15,8 +15,8 @@ for img_name in os.listdir(rootdir):
     image1 = img.crop(box1)  # 图像裁剪
     box2 = (750, 350, 920, 520)
     image2 = img.crop(box2)
-    image1.save(r"../feature" + '/' + img_name)  # 存储裁剪得到的图像
-    image2.save(r"../label" + '/' + img_name)
+    image1.save(r"../feature_eyes" + '/' + img_name)  # 存储裁剪得到的图像
+    image2.save(r"../label_eyes" + '/' + img_name)
 
 # img = Image.open('F:\\study\\机器学习\\experiment\\srtp\\2.0\\raw_eyes\\1-1-Omega-01-Jun-2019.mp4_1.jpg')
 # # print(img)
