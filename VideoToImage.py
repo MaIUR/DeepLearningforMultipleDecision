@@ -2,7 +2,7 @@
 import cv2
 import os.path
 
-# 1297个视频文件
+# 1296个视频文件
 rootdir = r'../../../../data/marui/vedio_eyes'
 vlist = os.listdir(rootdir)
 count = 0
@@ -32,7 +32,7 @@ for video in vlist:
     while rval and c < frame_all - 30:
         rval, frame = vc.read()
         # video = video - '.mp4'
-        cv2.imwrite('../../../../data/marui/raw_eyes' + video[0:len(video) - 4] + '_' + str(c) + '.jpg', frame)
+        cv2.imwrite('../../../../data/marui/raw_eyes/' + video[0:len(video) - 4] + '_' + str(c) + '.jpg', frame)
         c = c + 1
         # cv2.waitKey(1)
     vc.release()
