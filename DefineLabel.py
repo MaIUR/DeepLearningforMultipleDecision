@@ -1,14 +1,13 @@
-# coding: utf-8
+# coding=utf-8
 from PIL import Image
 import os.path
 
-
 # 指明被遍历的文件夹
-rootdir = r'../label_raw'
+rootdir = r'../../../../data/marui/label_eyes/'
 label_pic_list = os.listdir(rootdir)
-feature_dir = r'../feature_raw'
+feature_dir = r'../../../../data/marui/feature_raw/'
 
-# total	        251453
+# total	        1153192 801789
 # train	        150878      +++
 # validation     50290      +
 # test	         50285      +
@@ -19,8 +18,8 @@ for label_pic in label_pic_list:
     currentPath = os.path.join(rootdir, label_pic)
     print('the fulll name of the file is :' + currentPath)
     img = Image.open(currentPath)
-    featurePath = os.path.join(feature_dir, label_pic)
-    feature = Image.open(featurePath)
+    # featurePath = os.path.join(feature_dir, label_pic)
+    # feature = Image.open(featurePath)
     # print(img)
     width = img.width
     height = img.height
@@ -53,33 +52,31 @@ for label_pic in label_pic_list:
             print("要删除的文件不存在！")
     # 如果白色像素个数为7530，类别为stay
     elif white > 5000:
-        f1 = open('label_omega.txt', 'r+')
-        f1.read()
-        f1.write("stay\n")
-        f1.close()
-        f2 = open('label_omega_filename.txt', 'r+')
-        f2.read()
-        f2.write(currentPath + ":stay\n")
-        f2.close()
         temp = count % 5
         if temp == 0 or temp == 1 or temp == 2:
-            feature.save(r"./dataset/train/stay" + '/' + label_pic)  # 存储到指定的分类下
-            print("save success! " + label_pic)
+            # feature.save(r"../../../../data/marui/dataset_2/train/stay" + '/' + label_pic)  # 存储到指定的分类下
+            # print("save success! " + label_pic)
             count += 1
-            # os.remove(currentPath)
-            # print('delete success! ' + image_name)
+            f1 = open('trainset.txt', 'r+')
+            f1.read()
+            f1.write(feature_dir + label_pic + " 0\n")
+            f1.close()
         elif temp == 3:
-            feature.save(r"./dataset/validation/stay" + '/' + label_pic)  # 存储到指定的分类下
-            print("save success! " + label_pic)
+            # feature.save(r"./dataset/validation/stay" + '/' + label_pic)  # 存储到指定的分类下
+            # print("save success! " + label_pic)
             count += 1
-            # os.remove(currentPath)
-            # print('delete success! ' + image_name)
+            f2 = open('validationset.txt', 'r+')
+            f2.read()
+            f2.write(feature_dir + label_pic + " 0\n")
+            f2.close()
         elif temp == 4:
-            feature.save(r"./dataset/test/stay" + '/' + label_pic)  # 存储到指定的分类下
-            print("save success! " + label_pic)
+            # feature.save(r"./dataset/test/stay" + '/' + label_pic)  # 存储到指定的分类下
+            # print("save success! " + label_pic)
             count += 1
-            # os.remove(currentPath)
-            # print('delete success! ' + image_name)
+            f3 = open('testset.txt', 'r+')
+            f3.read()
+            f3.write(feature_dir + label_pic + " 0\n")
+            f3.close()
     else:
         # left
         box_left = (0, 50, 90, 120)  # 设置左、上、右、下的像素
@@ -150,129 +147,114 @@ for label_pic in label_pic_list:
         print('down白色像素个数' + str(down_white))
 
         # 判断哪一部分白色像素点最多
-        max = max(left_white, up_white, right_white, down_white)
-        if left_white == max:
-            f1 = open('label_omega.txt', 'r+')
-            f1.read()
-            f1.write("left\n")
-            f1.close()
-            f2 = open('label_omega_filename.txt', 'r+')
-            f2.read()
-            f2.write(currentPath + ":left\n")
-            f2.close()
+        m = max(left_white, up_white, right_white, down_white)
+        if left_white == m:
             temp = count % 5
             if temp == 0 or temp == 1 or temp == 2:
-                feature.save(r"./dataset/train/left" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/train/left" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f1 = open('trainset.txt', 'r+')
+                f1.read()
+                f1.write(feature_dir + label_pic + " 1\n")
+                f1.close()
             elif temp == 3:
-                feature.save(r"./dataset/validation/left" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/validation/left" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f2 = open('validationset.txt', 'r+')
+                f2.read()
+                f2.write(feature_dir + label_pic + " 1\n")
+                f2.close()
             elif temp == 4:
-                feature.save(r"./dataset/test/left" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/test/left" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
-        elif up_white == max:
-            f1 = open('label_omega.txt', 'r+')
-            f1.read()
-            f1.write("up\n")
-            f1.close()
-            f2 = open('label_omega_filename.txt', 'r+')
-            f2.read()
-            f2.write(currentPath + ":up\n")
-            f2.close()
+                f3 = open('testset.txt', 'r+')
+                f3.read()
+                f3.write(feature_dir + label_pic + " 1\n")
+                f3.close()
+        elif up_white == m:
             temp = count % 5
             if temp == 0 or temp == 1 or temp == 2:
-                feature.save(r"./dataset/train/up" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/train/up" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f1 = open('trainset.txt', 'r+')
+                f1.read()
+                f1.write(feature_dir + label_pic + " 2\n")
+                f1.close()
             elif temp == 3:
-                feature.save(r"./dataset/validation/up" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/validation/up" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f2 = open('validationset.txt', 'r+')
+                f2.read()
+                f2.write(feature_dir + label_pic + " 2\n")
+                f2.close()
             elif temp == 4:
-                feature.save(r"./dataset/test/up" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/test/up" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
-        elif right_white == max:
-            f1 = open('label_omega.txt', 'r+')
-            f1.read()
-            f1.write("right\n")
-            f1.close()
-            f2 = open('label_omega_filename.txt', 'r+')
-            f2.read()
-            f2.write(currentPath + ":right\n")
-            f2.close()
+                f3 = open('testset.txt', 'r+')
+                f3.read()
+                f3.write(feature_dir + label_pic + " 2\n")
+                f3.close()
+        elif right_white == m:
             temp = count % 5
             if temp == 0 or temp == 1 or temp == 2:
-                feature.save(r"./dataset/train/right" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/train/right" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f1 = open('trainset.txt', 'r+')
+                f1.read()
+                f1.write(feature_dir + label_pic + " 3\n")
+                f1.close()
             elif temp == 3:
-                feature.save(r"./dataset/validation/right" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/validation/right" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f2 = open('validationset.txt', 'r+')
+                f2.read()
+                f2.write(feature_dir + label_pic + " 3\n")
+                f2.close()
             elif temp == 4:
-                feature.save(r"./dataset/test/right" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/test/right" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
-        elif down_white == max:
-            f1 = open('label_omega.txt', 'r+')
-            f1.read()
-            f1.write("down\n")
-            f1.close()
-            f2 = open('label_omega_filename.txt', 'r+')
-            f2.read()
-            f2.write(currentPath + ":down\n")
-            f2.close()
+                f3 = open('testset.txt', 'r+')
+                f3.read()
+                f3.write(feature_dir + label_pic + " 3\n")
+                f3.close()
+        elif down_white == m:
             temp = count % 5
             if temp == 0 or temp == 1 or temp == 2:
-                feature.save(r"./dataset/train/down" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/train/down" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f1 = open('trainset.txt', 'r+')
+                f1.read()
+                f1.write(feature_dir + label_pic + " 4\n")
+                f1.close()
             elif temp == 3:
-                feature.save(r"./dataset/validation/down" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/validation/down" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f2 = open('validationset.txt', 'r+')
+                f2.read()
+                f2.write(feature_dir + label_pic + " 4\n")
+                f2.close()
             elif temp == 4:
-                feature.save(r"./dataset/test/down" + '/' + label_pic)  # 存储到指定的分类下
-                print("save success! " + label_pic)
+                # feature.save(r"./dataset/test/down" + '/' + label_pic)  # 存储到指定的分类下
+                # print("save success! " + label_pic)
                 count += 1
-                # os.remove(currentPath)
-                # print('delete success! ' + image_name)
+                f3 = open('testset.txt', 'r+')
+                f3.read()
+                f3.write(feature_dir + label_pic + " 4\n")
+                f3.close()
         else:
-            f1 = open('label_omega.txt', 'r+')
-            f1.read()
-            f1.write("\n")
-            f1.close()
-            f2 = open('label_omega_filename.txt', 'r+')
-            f2.read()
-            f2.write("\n")
-            f2.close()
-            f3 = open('error_label_omega.txt', 'r+')
-            f3.read()
-            f3.write(currentPath + "\n")
-            f3.close()
+            f4 = open('../DefineLabel_error.txt', 'r+')
+            f4.read()
+            f4.write(label_pic + "\n")
+            f4.close()
+print(count)

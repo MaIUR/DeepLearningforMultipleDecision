@@ -1,4 +1,4 @@
-# encoding:utf-8
+# encoding=utf-8
 import os.path
 
 # 1153192张图片
