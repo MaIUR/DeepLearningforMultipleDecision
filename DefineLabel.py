@@ -5,7 +5,7 @@ import os.path
 # 指明被遍历的文件夹
 rootdir = r'../../../../data/marui/label_eyes/'
 label_pic_list = os.listdir(rootdir)
-feature_dir = r'../../../../data/marui/feature_raw/'
+feature_dir = r'../../../../data/marui/feature_eyes/'
 
 # total	         801789      1153192
 # train	         481074      +++
