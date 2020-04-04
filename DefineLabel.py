@@ -7,10 +7,10 @@ rootdir = r'../../../../data/marui/label_eyes/'
 label_pic_list = os.listdir(rootdir)
 feature_dir = r'../../../../data/marui/feature_raw/'
 
-# total	        1153192 801789
-# train	        150878      +++
-# validation     50290      +
-# test	         50285      +
+# total	         801789      1153192
+# train	         481074      +++
+# validation     160358      +
+# test	         160357      +
 # count取余5，若为0、1、2则存入train，若为3则存入validation，若为4则存入test，使得大致比例为3：1：1
 count = 0
 
