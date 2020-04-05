@@ -14,38 +14,35 @@ bs = 4
 l_r = 0.001
 
 
-class MyDataset(torch.utils.data.Dataset):  # 创建自己的类：MyDataset,这个类是继承的torch.utils.data.Dataset
-    def __init__(self, root, datatxt, transform=None, target_transform=None):  # 初始化一些需要传入的参数
+class MyDataset(torch.utils.data.Dataset):  # 创建自己的类，继承torch.utils.data.Dataset
+    def __init__(self, root, datatxt, transform=None, target_transform=None):
         super(MyDataset, self).__init__()
-        fh = open(root + datatxt, 'r')  # 按照传入的路径和txt文本参数，打开这个文本，并读取内容
-        imgs = []  # 创建一个名为img的空列表，一会儿用来装东西
-        for line in fh:  # 按行循环txt文本中的内容
-            line = line.rstrip()  # 删除 本行string 字符串末尾的指定字符，这个方法的详细介绍自己查询python
+        fh = open(root + datatxt, 'r')
+        imgs = []  # 创建一个名为img的空列表，装feature
+        for line in fh:
+            line = line.rstrip()
             print(line)
-            words = line.split()  # 通过指定分隔符对字符串进行切片，默认为所有的空字符，包括空格、换行、制表符等
+            words = line.split()
             print(words)
-            imgs.append((words[0], int(words[1])))  # 把txt里的内容读入imgs列表保存，具体是words几要看txt内容而定
+            imgs.append((words[0], int(words[1])))
 
-        # 很显然，根据我刚才截图所示txt的内容，words[0]是图片信息，words[1]是lable
         self.imgs = imgs
         self.transform = transform
         self.target_transform = target_transform
 
-    def __getitem__(self, index):
-        # 这个方法是必须要有的，用于按照索引读取每个元素的具体内容
-        fn, label = self.imgs[index]  # fn是图片path #fn和label分别获得imgs[index]也即是刚才每行中word[0]和word[1]的信息
-        img = Image.open(fn).convert('RGB')  # 按照path读入图片from PIL import Image # 按照路径读取图片
+    def __getitem__(self, index):  # 按照索引读取每个元素的具体内容
+        fn, label = self.imgs[index]  # fn和label分别获得imgs[index]也即是刚才每行中word[0]和word[1]的信息
+        img = Image.open(fn).convert('RGB')
 
         if self.transform is not None:
-            img = self.transform(img)  # 是否进行transform
-        return img, label  # return很关键，return回哪些内容，那么我们在训练时循环读取每个batch时，就能获得哪些内容
+            img = self.transform(img)
+        return img, label  # return回哪些内容，训练时循环读取每个batch时，就获得哪些内容
 
-    def __len__(self):  # 这个函数也必须要写，它返回的是数据集的长度，也就是多少张图片，要和loader的长度作区分
+    def __len__(self):  # 返回数据集的长度，要和loader的长度区分
         return len(self.imgs)
 
 
-# 根据自己定义的那个勒MyDataset来创建数据集！注意是数据集！而不是loader迭代器
-def loadtraindata():
+def loadtraindata():  # 创建数据集
     print("!!!!!!!!!!inside loadtraindata!!!!!!!!!!!!!!!")
     # path = r"/mnt/nas/cv_data/imagequality/waterloo_de20_all/train"
     # path = r"dataset/train"
@@ -96,12 +93,13 @@ class Net(nn.Module):
         )
 
         # 网络前向传播过程
-        # RuntimeError: size mismatch, m1: [1000 x 6400], m2: [9216 x 4096]
+        # 一个错误：RuntimeError: size mismatch, m1: [4 x 6400], m2: [9216 x 4096]
         # All you have to care is b = c and you are done: m1: [a x b], m2: [c x d]
-        # m1 is [a x b] which is [batch size x in features] in features不是输入图像大小，输入图像为96*96时为256，输入图像为227*227时为9216
+        # m1 is [a x b] which is [batch size x in features]
+        # in features不是输入图像大小，输入图像为96*96时为256，224*224时为6400，227*227时为9216
         # m2 is [c x d] which is [ in features x out features]
         self.dense = torch.nn.Sequential(
-            torch.nn.Linear(9216, 4096),
+            torch.nn.Linear(6400, 4096),
             torch.nn.ReLU(),
             torch.nn.Dropout(0.5),
             torch.nn.Linear(4096, 4096),
@@ -129,7 +127,6 @@ def trainandsave():
     optimizer = optim.SGD(net.parameters(), lr=l_r, momentum=0.9)
     criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # 假设我们在支持CUDA的机器上，我们可以打印出CUDA设备：
     print(device)
 
     net.to(device)
@@ -152,7 +149,6 @@ def trainandsave():
             optimizer.zero_grad()
 
             # forward + backward + optimize
-
             outputs = net(inputs)
 
             loss = criterion(outputs, labels)
@@ -189,6 +185,7 @@ def trainandsave():
     f1.read()
     f1.write('Finished Training\n')
     f1.close()
+    # 保存模型
     torch.save(net, '5_4_0.001.pkl')
     torch.save(net.state_dict(), '5_4_0.001_params.pkl')
 
