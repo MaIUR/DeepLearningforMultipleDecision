@@ -9,8 +9,8 @@ from torch.autograd import Variable
 import torch.optim as optim
 import torch.utils.data as data
 
-log = '5_4_0.001.txt'
-bs = 4
+log = '5_16_0.001.txt'
+bs = 16
 l_r = 0.001
 
 
@@ -186,12 +186,12 @@ def trainandsave():
     f1.write('Finished Training\n')
     f1.close()
     # 保存模型
-    torch.save(net, '5_4_0.001.pkl')
-    torch.save(net.state_dict(), '5_4_0.001_params.pkl')
+    torch.save(net, '5_16_0.001.pkl')
+    torch.save(net.state_dict(), '5_16_0.001_params.pkl')
 
 
 def reload_net():
-    trainednet = torch.load('5_4_0.001.pkl')
+    trainednet = torch.load('5_16_0.001.pkl')
     return trainednet
 
 
@@ -306,5 +306,5 @@ def imshow(img):
     # 任意地拿到一些图片
 
 
-trainandsave()
+#trainandsave()
 test()
