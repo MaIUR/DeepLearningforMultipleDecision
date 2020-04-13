@@ -3,14 +3,14 @@ from PIL import Image
 import os.path
 
 # 指明被遍历的文件夹
-rootdir = r'../../../../data/marui/label_eyes/'
+rootdir = r'../label_eyes/'
 label_pic_list = os.listdir(rootdir)
-feature_dir = r'../../../../data/marui/feature_eyes/'
+feature_dir = r'../feature_eyes/'
 
-# total	         801789      1153192
-# train	         481074      +++
-# validation     160358      +
-# test	         160357      +
+# total	         1615540
+# train	         969324      +++
+# validation     323108      +
+# test	         323108      +
 # count取余5，若为0、1、2则存入train，若为3则存入validation，若为4则存入test，使得大致比例为3：1：1
 count = 0
 

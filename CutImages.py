@@ -3,7 +3,7 @@ from PIL import Image
 import os.path
 
 # 指明被遍历的文件夹
-rootdir = r'../../../../data/marui/raw_eyes'
+rootdir = r'../raw_eyes'
 for img_name in os.listdir(rootdir):
     currentPath = os.path.join(rootdir, img_name)
     print('the fulll name of the file is :' + currentPath)
@@ -16,8 +16,8 @@ for img_name in os.listdir(rootdir):
         image1 = img.crop(box1)  # 图像裁剪
         box2 = (750, 350, 920, 520)
         image2 = img.crop(box2)
-        image1.save(r"../../../../data/marui/feature_eyes/" + img_name)  # 存储裁剪得到的图像
-        image2.save(r"../../../../data/marui/label_eyes/" + img_name)
+        image1.save(r"../feature_eyes/" + img_name)  # 存储裁剪得到的图像
+        image2.save(r"../label_eyes/" + img_name)
     except(OSError, NameError):
         f = open('../CutImages_error.txt', 'r+')
         f.read()
