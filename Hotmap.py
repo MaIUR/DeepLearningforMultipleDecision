@@ -119,7 +119,7 @@ def show_cam_on_image(img, mask, name):
     heatmap = np.float32(heatmap) / 255  # 归一化
     cam = heatmap + np.float32(img)  # 将heatmap 叠加到原图
     cam = cam / np.max(cam)
-    cv2.imwrite('./hotmap_5_16/' + name, np.uint8(255 * cam))  # 生成图像
+    cv2.imwrite('../hotmap/sgd_5_0.001/' + name, np.uint8(255 * cam))  # 生成图像
 
     # cam = cam[:, :, ::-1]  # BGR > RGB
     # plt.figure(figsize=(10, 10))
@@ -136,7 +136,7 @@ class GradCam():
 
     # def __init__(self, model, target_layer_names):
     def __init__(self, target_layer_names):
-        self.model = t.load('5_16_0.001.pkl')
+        self.model = net
         self.extractor = FeatureExtractor(self.model, target_layer_names)
         # self.extractor = FeatureExtractor(self.model, target_layer_names)
 
@@ -185,7 +185,7 @@ class GradCam():
         return cam
 
 
-net = t.load('5_16_0.001.pkl')
+net = t.load('sgd_4_0.001.pkl')
 # grad_cam = GradCam(model=net, target_layer_names=["7"])
 # for i in range(13):
 #     grad_cam = GradCam(target_layer_names=["%d" % i])
@@ -216,12 +216,12 @@ net = t.load('5_16_0.001.pkl')
 #     show_cam_on_image(img, mask, i, "down")
 
 # 指明被遍历的文件夹
-rootdir = r'../../../../data/marui/feature_eyes/'
+rootdir = r'../feature_eyes/'
 hp_pic_list = os.listdir(rootdir)
 grad_cam = GradCam(target_layer_names=["10"])
 for htmp in hp_pic_list:
-    print(htmp[0:22])
-    if htmp[0:22] == '1-2-Omega-27-Jun-2019_':
+    print(htmp[0:23])
+    if htmp[0:23] == '12-1-Omega-25-Jun-2019_':
         currentPath = os.path.join(rootdir, htmp)
         # currentPath = r'./1-1-Omega-01-Jun-2019.mp4_1.jpg'
         print('the fulll name of the file is :' + currentPath)
