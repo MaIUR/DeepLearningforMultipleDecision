@@ -119,7 +119,7 @@ def show_cam_on_image(img, mask, name):
     heatmap = np.float32(heatmap) / 255  # 归一化
     cam = heatmap + np.float32(img)  # 将heatmap 叠加到原图
     cam = cam / np.max(cam)
-    cv2.imwrite('../hotmap/sgd_5_0.001/' + name, np.uint8(255 * cam))  # 生成图像
+    cv2.imwrite('../hotmap/sgd_1024_0.001/' + name, np.uint8(255 * cam))  # 生成图像
 
     # cam = cam[:, :, ::-1]  # BGR > RGB
     # plt.figure(figsize=(10, 10))
@@ -185,7 +185,7 @@ class GradCam():
         return cam
 
 
-net = t.load('sgd_4_0.001.pkl')
+net = t.load('sgd_1024_0.001.pkl')
 # grad_cam = GradCam(model=net, target_layer_names=["7"])
 # for i in range(13):
 #     grad_cam = GradCam(target_layer_names=["%d" % i])
