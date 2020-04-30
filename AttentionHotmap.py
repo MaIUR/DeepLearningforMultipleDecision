@@ -12,9 +12,37 @@ import os.path
 net = t.load('../models/attention_256_0.001.pkl')
 savedir = r'../hotmap/attention_256_0.001/'
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
+class SelfAttention(nn.Module):
+    def __init__(self, hidden_dim):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.projection = nn.Sequential(
+            nn.Linear(hidden_dim, 64),
+            nn.ReLU(True),
+            nn.Linear(64, 1)
+        )
+
+    def forward(self, encoder_outputs):
+        batch_size = encoder_outputs.size(0)
+        # (B, L, H) -> (B , L, 1)
+        energy = self.projection(encoder_outputs)
+        weights = nn.functional.softmax(energy.squeeze(-1), dim=1)
+        # (B, L, H) * (B, L, 1) -> (B, H)
+        outputs = (encoder_outputs * weights.unsqueeze(-1)).sum(dim=1)
+        return outputs, weights
+
+
+class AttnClassifier(nn.Module):
+    def __init__(self, input_dim, embedding_dim, hidden_dim):
+        # super().__init__()
+        super(AttnClassifier, self).__init__()
+        self.input_dim = input_dim
+        self.embedding_dim = embedding_dim
+        self.hidden_dim = hidden_dim
+        self.embedding = nn.Embedding(input_dim, embedding_dim)
+        # self.lstm = nn.LSTM(embedding_dim, hidden_dim, bidirectional=True)
+        self.attention = SelfAttention(hidden_dim)
+        self.fc = nn.Linear(hidden_dim, 1)
         self.feature = t.nn.Sequential(
             t.nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=0),
             t.nn.ReLU(),
@@ -28,12 +56,6 @@ class Net(nn.Module):
             t.nn.ReLU(),
             t.nn.MaxPool2d(3, 2)  # output_size = 6*6*256
         )
-
-        # 网络前向传播过程
-        # RuntimeError: size mismatch, m1: [1000 x 6400], m2: [9216 x 4096]
-        # All you have to care is b = c and you are done: m1: [a x b], m2: [c x d]
-        # m1 is [a x b] which is [batch size x in features] in features不是输入图像大小，输入图像为96*96时为256，输入图像为227*227时为9216
-        # m2 is [c x d] which is [ in features x out features]
         self.dense = t.nn.Sequential(
             t.nn.Linear(6400, 4096),
             t.nn.ReLU(),
@@ -44,12 +66,28 @@ class Net(nn.Module):
             t.nn.Linear(4096, 50)
         )
 
-    def forward(self, x):
-        feature_out = self.feature(x)
+    def set_embedding(self, vectors):
+        self.embedding.weight.data.copy_(vectors)
+
+    def forward(self, inputs, lengths):
+        feature_out = self.feature(inputs)
         res = feature_out.view(feature_out.size(0), -1)
         print("res" + str(res.shape))
         out = self.dense(res)
-        return out
+        batch_size = out.size(1)
+        # (L, B)
+        embedded = self.embedding(out)
+        # (L, B, E)
+        packed_emb = nn.utils.rnn.pack_padded_sequence(embedded, lengths)
+        out, hidden = self.lstm(packed_emb)
+        out = nn.utils.rnn.pad_packed_sequence(out)[0]
+        out = out[:, :, :self.hidden_dim] + out[:, :, self.hidden_dim:]
+        # (L, B, H)
+        embedding, attn_weights = self.attention(out.transpose(0, 1))
+        # (B, HOP, H)
+        outputs = self.fc(embedding.view(batch_size, -1))
+        # (B, 1)
+        return outputs, attn_weights
 
 
 class FeatureExtractor(nn.Module):

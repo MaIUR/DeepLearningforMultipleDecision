@@ -10,11 +10,11 @@ import torch.optim as optim
 import torch.utils.data as data
 import os
 
-log = 'attention_256_0.001.txt'
-bs = 256
+log = '../models/attention_1024_0.001.txt'
+bs = 1024
 l_r = 0.001
-model_save = 'attention_256_0.001.pkl'
-model_para = 'attention_256_0.001_params.pkl'
+model_save = '../models/attention_1024_0.001.pkl'
+model_para = '../models/attention_1024_0.001_params.pkl'
 
 embedding_dim = 200
 hidden_dim = 200
@@ -138,18 +138,21 @@ class AttnClassifier(nn.Module):
     def set_embedding(self, vectors):
         self.embedding.weight.data.copy_(vectors)
 
-    def forward(self, inputs, lengths):
+    def forward(self, inputs):
         feature_out = self.feature(inputs)
         res = feature_out.view(feature_out.size(0), -1)
         print("res" + str(res.shape))
-        out = self.dense(res)
-        batch_size = out.size(1)
+        cnn_out = self.dense(res)
+        batch_size = cnn_out.size(1)
         # (L, B)
-        embedded = self.embedding(out)
+        embedded = self.embedding(cnn_out)
         # (L, B, E)
-        packed_emb = nn.utils.rnn.pack_padded_sequence(embedded, lengths)
-        out, hidden = self.lstm(packed_emb)
-        out = nn.utils.rnn.pad_packed_sequence(out)[0]
+        print()
+        print(batch_size)
+        print(embedded.size(1))
+        packed_emb = nn.utils.rnn.pack_padded_sequence(embedded, embedded.size(1))
+        # out, hidden = self.lstm(packed_emb)
+        out = nn.utils.rnn.pad_packed_sequence(packed_emb)[0]
         out = out[:, :, :self.hidden_dim] + out[:, :, self.hidden_dim:]
         # (L, B, H)
         embedding, attn_weights = self.attention(out.transpose(0, 1))
@@ -207,7 +210,8 @@ def trainandsave():
     print("!!!!!!!!!!inside trainandsave!!!!!!!!!!!!!!!")
     trainloader = loadtraindata()
 
-    net = Net()
+    # net = Net()
+    net = AttnClassifier(50, embedding_dim, hidden_dim)
     # optimizer = optim.Adam(net.parameters(), lr=l_r, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
     optimizer = optim.SGD(net.parameters(), lr=l_r, momentum=0.9)
     criterion = nn.CrossEntropyLoss()
