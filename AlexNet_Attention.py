@@ -147,7 +147,7 @@ class AttnClassifier(nn.Module):
         # (L, B)
         embedded = self.embedding(cnn_out)
         # (L, B, E)
-        print()
+        print("here")
         print(batch_size)
         print(embedded.size(1))
         packed_emb = nn.utils.rnn.pack_padded_sequence(embedded, embedded.size(1))

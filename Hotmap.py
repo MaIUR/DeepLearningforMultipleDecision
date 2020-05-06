@@ -8,9 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os.path
 
+savedir = r'../hotmap/sgd_4_0.001_test/'
+log = r'../hotmap/sgd_4_0.001.txt'
 
-net = t.load('../models/attention_256_0.001.pkl')
-savedir = r'../hotmap/attention_256_0.001/'
 
 class Net(nn.Module):
     def __init__(self):
@@ -129,6 +129,9 @@ def show_cam_on_image(img, mask, name):
     # plt.imshow(np.uint8(255 * cam))
 
 
+net = t.load('../models/sgd_4_0.001.pkl')
+
+
 class GradCam():
     """
     GradCam主要执行
@@ -183,10 +186,23 @@ class GradCam():
             # 最终 14*14的空白map 会被填满
 
         cam = cv2.resize(cam, (224, 224))  # 将14*14的featuremap 放大回224*224
-        cam = cam - np.min(cam)
-        cam = cam / np.max(cam)
+        # print(type(cam))
+        # print(cam.shape)
+        print(cam)
+        # cam = cam - np.min(cam)
+        # cam = cam / np.max(cam)
+        # for i, row in enumerate(cam):
+        #     for j, val in enumerate(row):
+        #         if val > 0.005:
+        #             cam[i][j] = 0.005
+        print(str(np.max(cam)), "      ", str(np.min(cam)))
+        f1 = open(log, 'r+')
+        f1.read()
+        f1.write(str(cam) + "\n")
+        f1.write(str(np.max(cam)) + "      " + str(np.min(cam)) + "\n")
+        # cam = cam - np.min(cam)
+        # cam = cam / np.max(cam)
         return cam
-
 
 
 # grad_cam = GradCam(model=net, target_layer_names=["7"])
@@ -223,7 +239,7 @@ rootdir = r'../feature_eyes/'
 hp_pic_list = os.listdir(rootdir)
 grad_cam = GradCam(target_layer_names=["10"])
 for htmp in hp_pic_list:
-    print(htmp[0:23])
+    # print(htmp[0:23])
     if htmp[0:23] == '12-1-Omega-25-Jun-2019_':
         currentPath = os.path.join(rootdir, htmp)
         # currentPath = r'./1-1-Omega-01-Jun-2019.mp4_1.jpg'
@@ -232,4 +248,4 @@ for htmp in hp_pic_list:
         img = np.float32(cv2.resize(img, (224, 224))) / 255
         input = preprocess_image(img)
         mask = grad_cam(input)
-        show_cam_on_image(img, mask, htmp)
+        # show_cam_on_image(img, mask, htmp)
