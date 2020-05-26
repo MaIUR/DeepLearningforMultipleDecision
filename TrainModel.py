@@ -9,8 +9,8 @@ from torch.autograd import Variable
 import torch.optim as optim
 import torch.utils.data as data
 
-log = '5_16_0.001.txt'
-bs = 16
+log = r'../log/4_0.001.txt'
+bs = 4
 l_r = 0.001
 
 
@@ -78,18 +78,18 @@ def loadtestdata():
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.feature = torch.nn.Sequential(
-            torch.nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=0),
+        self.feature = torch.nn.Sequential( # input_size = 224*224*3
+            torch.nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=0), # output_size = 54*54*96
             torch.nn.ReLU(),
-            torch.nn.MaxPool2d(kernel_size=3, stride=2),  # output_size = 27*27*96
-            torch.nn.Conv2d(96, 256, 5, 1, 2),
+            torch.nn.MaxPool2d(kernel_size=3, stride=2),  # output_size = 25*25*96
+            torch.nn.Conv2d(96, 256, 5, 1, 2), # output_size = 25*25*256
             torch.nn.ReLU(),
-            torch.nn.MaxPool2d(3, 2),  # output_size = 13*13*256
-            torch.nn.Conv2d(256, 384, 3, 1, 1),
-            torch.nn.ReLU(),  # output_size = 13*13*384
-            torch.nn.Conv2d(384, 256, 3, 1, 1),
+            torch.nn.MaxPool2d(3, 2),  # output_size = 12*12*256
+            torch.nn.Conv2d(256, 384, 3, 1, 1), # output_size = 12*12*384
+            torch.nn.ReLU(), 
+            torch.nn.Conv2d(384, 256, 3, 1, 1), # output_size = 12*12*256
             torch.nn.ReLU(),
-            torch.nn.MaxPool2d(3, 2)  # output_size = 6*6*256
+            torch.nn.MaxPool2d(3, 2)  # output_size = 5*5*256
         )
 
         # 网络前向传播过程
@@ -99,20 +99,21 @@ class Net(nn.Module):
         # in features不是输入图像大小，输入图像为96*96时为256，224*224时为6400，227*227时为9216
         # m2 is [c x d] which is [ in features x out features]
         self.dense = torch.nn.Sequential(
-            torch.nn.Linear(6400, 4096),
+            torch.nn.Linear(6400, 4096), # 4096*1
             torch.nn.ReLU(),
             torch.nn.Dropout(0.5),
             torch.nn.Linear(4096, 4096),
             torch.nn.ReLU(),
             torch.nn.Dropout(0.5),
-            torch.nn.Linear(4096, 50)
+            torch.nn.Linear(4096, 5) # 50*1
         )
 
     def forward(self, x):
         feature_out = self.feature(x)
         res = feature_out.view(feature_out.size(0), -1)
-        print("res" + str(res.shape))
+        # print("res" + str(res.shape))
         out = self.dense(res)
+        # print("out" + str(out.shape))
         return out
 
 
@@ -131,7 +132,7 @@ def trainandsave():
 
     net.to(device)
     # train
-    for epoch in range(3):
+    for epoch in range(2):
         running_loss = 0.0
         print("\n-----------------------------------\nepoch " + str(epoch) + ":")
         for i, data in enumerate(trainloader, 0):
@@ -186,12 +187,12 @@ def trainandsave():
     f1.write('Finished Training\n')
     f1.close()
     # 保存模型
-    torch.save(net, '5_16_0.001.pkl')
-    torch.save(net.state_dict(), '5_16_0.001_params.pkl')
+    torch.save(net, '../../../../data/marui/n16_0.001.pkl')
+    torch.save(net.state_dict(), '../../../../data/marui/n16_0.001_params.pkl')
 
 
 def reload_net():
-    trainednet = torch.load('5_16_0.001.pkl')
+    trainednet = torch.load('../../../../data/marui/4_0.001.pkl')
     return trainednet
 
 
@@ -274,15 +275,20 @@ def test():
     with torch.no_grad():
         for images, labels in testloader:
             images, labels = images.to(device), labels.to(device)
-
+            print(labels)
             outputs = net(images)
             _, predicted = torch.max(outputs, 1)
+            print(predicted)
             is_correct = (labels == predicted).squeeze()
-            for i in range(len(labels)):
-                label = labels[i]
-                class_total[label] += 1
-                class_correct[label] += is_correct[i].item()
-
+            print((is_correct))
+            if len(labels)>1:
+                for i in range(len(labels)):
+                    label = labels[i]
+                    class_total[label] += 1
+                    class_correct[label] += is_correct[i]
+# Traceback(most recent call last): File "TrainModel.py", line 311, in < module > test()
+# File "TrainModel.py", line 285, in test class_correct[label] += is_correct[i].item()
+# IndexError: invalid index of a 0 - dim tensor.Use tensor.item() to convert a 0 - dim tensor to a Python number
     for i in range(n_classes):
         print('Accuracy of %5s: %.2f %%' % (
             classes[i], 100.0 * class_correct[i] / class_total[i]
@@ -305,6 +311,5 @@ def imshow(img):
 
     # 任意地拿到一些图片
 
-
-#trainandsave()
+# trainandsave()
 test()

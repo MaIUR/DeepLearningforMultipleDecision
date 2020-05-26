@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os.path
 
-savedir = r'../hotmap/sgd_4_0.001_test/'
-log = r'../hotmap/sgd_4_0.001.txt'
+savedir = r'../../../../data/marui/hotmap/4_0.001_test/'
+log = r'../../../../data/marui/hotmap/4_0.001.txt'
 
 
 class Net(nn.Module):
@@ -129,7 +129,7 @@ def show_cam_on_image(img, mask, name):
     # plt.imshow(np.uint8(255 * cam))
 
 
-net = t.load('../models/sgd_4_0.001.pkl')
+net = t.load('../../../../data/marui/4_0.001.pkl')
 
 
 class GradCam():
@@ -200,8 +200,8 @@ class GradCam():
         f1.read()
         f1.write(str(cam) + "\n")
         f1.write(str(np.max(cam)) + "      " + str(np.min(cam)) + "\n")
-        # cam = cam - np.min(cam)
-        # cam = cam / np.max(cam)
+        cam = cam - np.min(cam)
+        cam = cam / np.max(cam)
         return cam
 
 
@@ -235,12 +235,12 @@ class GradCam():
 #     show_cam_on_image(img, mask, i, "down")
 
 # 指明被遍历的文件夹
-rootdir = r'../feature_eyes/'
+rootdir = r'../../../../data/marui/feature_eyes/'
 hp_pic_list = os.listdir(rootdir)
-grad_cam = GradCam(target_layer_names=["10"])
+grad_cam = GradCam(target_layer_names=["9"])
 for htmp in hp_pic_list:
     # print(htmp[0:23])
-    if htmp[0:23] == '12-1-Omega-25-Jun-2019_':
+    if htmp[0:23] == '13-3-Omega-21-Aug-2019_': # '12-1-Omega-25-Jun-2019_': 0-23
         currentPath = os.path.join(rootdir, htmp)
         # currentPath = r'./1-1-Omega-01-Jun-2019.mp4_1.jpg'
         print('the fulll name of the file is :' + currentPath)
@@ -248,4 +248,4 @@ for htmp in hp_pic_list:
         img = np.float32(cv2.resize(img, (224, 224))) / 255
         input = preprocess_image(img)
         mask = grad_cam(input)
-        # show_cam_on_image(img, mask, htmp)
+        show_cam_on_image(img, mask, htmp)
