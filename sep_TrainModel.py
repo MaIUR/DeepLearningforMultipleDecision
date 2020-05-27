@@ -9,8 +9,8 @@ from torch.autograd import Variable
 import torch.optim as optim
 import torch.utils.data as data
 
-log = r'../log/n128_0.001.txt'
-bs = 128
+log = r'../log/sep1024_0.001.txt'
+bs = 1024
 l_r = 0.001
 
 
@@ -78,18 +78,28 @@ def loadtestdata():
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.feature = torch.nn.Sequential( # input_size = 224*224*3
-            torch.nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=0), # output_size = 54*54*96
+        self.conv1 = torch.nn.Sequential(  # input_size = 227*227*3
+            torch.nn.Conv2d(in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=0),
             torch.nn.ReLU(),
-            torch.nn.MaxPool2d(kernel_size=3, stride=2),  # output_size = 25*25*96
-            torch.nn.Conv2d(96, 256, 5, 1, 2), # output_size = 25*25*256
+            torch.nn.MaxPool2d(kernel_size=3, stride=2)  # output_size = 27*27*96
+        )
+        self.conv2 = torch.nn.Sequential(  # input_size = 27*27*96
+            torch.nn.Conv2d(96, 256, 5, 1, 2),
             torch.nn.ReLU(),
-            torch.nn.MaxPool2d(3, 2),  # output_size = 12*12*256
-            torch.nn.Conv2d(256, 384, 3, 1, 1), # output_size = 12*12*384
-            torch.nn.ReLU(), 
-            torch.nn.Conv2d(384, 256, 3, 1, 1), # output_size = 12*12*256
+            torch.nn.MaxPool2d(3, 2)  # output_size = 13*13*256
+        )
+        self.conv3 = torch.nn.Sequential(  # input_size = 13*13*256
+            torch.nn.Conv2d(256, 384, 3, 1, 1),
+            torch.nn.ReLU(),  # output_size = 13*13*384
+        )
+        self.conv4 = torch.nn.Sequential(  # input_size = 13*13*384
+            torch.nn.Conv2d(384, 384, 3, 1, 1),
+            torch.nn.ReLU(),  # output_size = 13*13*384
+        )
+        self.conv5 = torch.nn.Sequential(  # input_size = 13*13*384
+            torch.nn.Conv2d(384, 256, 3, 1, 1),
             torch.nn.ReLU(),
-            torch.nn.MaxPool2d(3, 2)  # output_size = 5*5*256
+            torch.nn.MaxPool2d(3, 2)  # output_size = 6*6*256
         )
 
         # 网络前向传播过程
@@ -99,22 +109,31 @@ class Net(nn.Module):
         # in features不是输入图像大小，输入图像为96*96时为256，224*224时为6400，227*227时为9216
         # m2 is [c x d] which is [ in features x out features]
         self.dense = torch.nn.Sequential(
-            torch.nn.Linear(6400, 4096), # 4096*1
+            torch.nn.Linear(6400, 4096),  # 4096*1
             torch.nn.ReLU(),
             torch.nn.Dropout(0.5),
             torch.nn.Linear(4096, 4096),
             torch.nn.ReLU(),
             torch.nn.Dropout(0.5),
-            torch.nn.Linear(4096, 5) # 50*1
+            torch.nn.Linear(4096, 5)  # 50*1
         )
 
     def forward(self, x):
-        feature_out = self.feature(x)
-        res = feature_out.view(feature_out.size(0), -1)
-        # print("res" + str(res.shape))
+        conv1_out = self.conv1(x)
+        print("conv1" + str(conv1_out.shape))
+        conv2_out = self.conv2(conv1_out)
+        print("conv2" + str(conv2_out.shape))
+        conv3_out = self.conv3(conv2_out)
+        print("conv3" + str(conv3_out.shape))
+        conv4_out = self.conv4(conv3_out)
+        print("conv4" + str(conv4_out.shape))
+        conv5_out = self.conv5(conv4_out)
+        print("conv5" + str(conv5_out.shape))
+        res = conv5_out.view(conv5_out.size(0), -1)
+        print("res" + str(res.shape))
         out = self.dense(res)
-        # print("out" + str(out.shape))
         return out
+
 
 
 classes = ('stay', 'left', 'up', 'right', 'down')
@@ -187,12 +206,12 @@ def trainandsave():
     f1.write('Finished Training\n')
     f1.close()
     # 保存模型
-    torch.save(net, '../../../../data/marui/n128_0.001.pkl')
-    torch.save(net.state_dict(), '../../../../data/marui/n128_0.001_params.pkl')
+    torch.save(net, '../../../../data/marui/sep1024_0.001.pkl')
+    torch.save(net.state_dict(), '../../../../data/marui/sep1024_0.001_params.pkl')
 
 
 def reload_net():
-    trainednet = torch.load('../../../../data/marui/n128_0.001.pkl')
+    trainednet = torch.load('../../../../data/marui/sep1024_0.001.pkl')
     return trainednet
 
 
@@ -250,8 +269,8 @@ def test():
     f1.close()
 
     # 评估测试数据集
-    
-    #with torch.no_grad():
+
+    # with torch.no_grad():
     #    for images, labels in testloader:
     #        images, labels = images.to(device), labels.to(device)
 
@@ -260,13 +279,13 @@ def test():
     #        total += labels.size(0)
     #        correct += (labels == predicted).sum().item()
 
-    #print('Accuracy of the network on the test images: %d %%' % (
+    # print('Accuracy of the network on the test images: %d %%' % (
     #        100 * correct / total))
-    #f1 = open(log, 'r+')
-    #f1.read()
-    #f1.write('\nAccuracy of the network on the test images: %d %%' % (
+    # f1 = open(log, 'r+')
+    # f1.read()
+    # f1.write('\nAccuracy of the network on the test images: %d %%' % (
     #        100 * correct / total))
-    #f1.close()
+    # f1.close()
 
     # 评估测试数据集，按类标评估
     correct, total = 0, 0
@@ -284,14 +303,14 @@ def test():
             correct += (labels == predicted).sum().item()
             is_correct = (labels == predicted).squeeze()
             print((is_correct))
-            if len(labels)>1:
+            if len(labels) > 1:
                 for i in range(len(labels)):
                     label = labels[i]
                     class_total[label] += 1
                     class_correct[label] += is_correct[i]
-# Traceback(most recent call last): File "TrainModel.py", line 311, in < module > test()
-# File "TrainModel.py", line 285, in test class_correct[label] += is_correct[i].item()
-# IndexError: invalid index of a 0 - dim tensor.Use tensor.item() to convert a 0 - dim tensor to a Python number
+    # Traceback(most recent call last): File "TrainModel.py", line 311, in < module > test()
+    # File "TrainModel.py", line 285, in test class_correct[label] += is_correct[i].item()
+    # IndexError: invalid index of a 0 - dim tensor.Use tensor.item() to convert a 0 - dim tensor to a Python number
     print('Accuracy of the network on the test images: %d %%' % (
             100 * correct / total))
     f1 = open(log, 'r+')
@@ -320,6 +339,7 @@ def imshow(img):
     plt.show()
 
     # 任意地拿到一些图片
+
 
 trainandsave()
 test()
